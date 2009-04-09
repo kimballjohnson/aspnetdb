@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Web Developer Express 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecuApp", "SecuApp\SecuApp.csproj", "{3D0A463A-E9EA-4165-9C8E-BD4A9E6C4116}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3D0A463A-E9EA-4165-9C8E-BD4A9E6C4116}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D0A463A-E9EA-4165-9C8E-BD4A9E6C4116}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D0A463A-E9EA-4165-9C8E-BD4A9E6C4116}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D0A463A-E9EA-4165-9C8E-BD4A9E6C4116}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

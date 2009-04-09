@@ -1,0 +1,48 @@
+﻿body
+{
+    background-color: #DFD1A4;
+    font-family: Arial, Helvetica, sans-serif;
+}
+td
+{
+    text-align: left;
+    vertical-align: top;
+}
+
+input
+{
+    font-family: Tahoma;
+    border: 1px solid #800000;
+}
+
+input:hover
+{
+    border-color: Red;
+}
+.logoCell
+{
+    font-family: Tahoma;
+    font-size: large;
+    font-weight: bold;
+    font-variant: small-caps;    
+    text-align: left;
+}
+.userStatusCell
+{
+    text-align: right;
+}
+
+.appStatus
+{
+    text-align: right;
+    background-color: #C0C0C0;
+    color: #800000;
+}
+
+.header
+{
+    height: 15%;
+    background-color: #808080;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+}
