@@ -8,7 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace org.bsodhi.SecuApp.secure {
+namespace org.bsodhi.SecuApp.secure
+{
     
     
     public partial class Security {
@@ -39,6 +40,24 @@ namespace org.bsodhi.SecuApp.secure {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LoginStatus LoginStatus1;
+        
+        /// <summary>
+        /// StatusMsg control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label StatusMsg;
+        
+        /// <summary>
+        /// SelectedAppName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label SelectedAppName;
         
         /// <summary>
         /// AppSelectLink control.
@@ -275,13 +294,13 @@ namespace org.bsodhi.SecuApp.secure {
         protected global::System.Web.UI.WebControls.LinkButton SubmitBtn;
         
         /// <summary>
-        /// SqlDataSource1 control.
+        /// Applications control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.SqlDataSource SqlDataSource1;
+        protected global::System.Web.UI.WebControls.SqlDataSource Applications;
         
         /// <summary>
         /// AssigneeDS control.
@@ -300,23 +319,5 @@ namespace org.bsodhi.SecuApp.secure {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.SqlDataSource RolesDS;
-        
-        /// <summary>
-        /// SelectedAppName control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label SelectedAppName;
-        
-        /// <summary>
-        /// StatusMsg control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label StatusMsg;
     }
 }
