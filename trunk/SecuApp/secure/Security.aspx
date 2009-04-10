@@ -38,9 +38,24 @@
                 </tr>
             </table>
         </div>
+        <div class="appStatus">
+            <table width="100%">
+                <tr>
+                    <td style="text-align: left;">
+                        <asp:Label ID="StatusMsg" runat="server" />
+                    </td>
+                    <td style="width: 30%; text-align: right;">
+                        [Selected application:
+                        <asp:Label ID="SelectedAppName" runat="server" />]
+                    </td>
+                </tr>
+            </table>
+        </div>
+
         <div class="content">
             <br />
-            <asp:LinkButton ID="AppSelectLink" runat="server" Text="Select Application" OnClick="AppSelectLink_Click" />&nbsp;|
+            <asp:LinkButton ID="AppSelectLink" runat="server" Text="Change Application" 
+                OnClick="AppSelectLink_Click" />&nbsp;|
             <asp:LinkButton ID="TaskSelectLink" runat="server" Text="Select Task" OnClick="TaskSelectLink_Click" />
             <asp:MultiView ID="MultiView1" runat="server" ActiveViewIndex="0">
                 <!-- Index 0 -->
@@ -51,8 +66,8 @@
                                 Select Existing Application:
                             </td>
                             <td class="val">
-                                <asp:DropDownList ID="AppName" runat="server" DataSourceID="SqlDataSource1" DataTextField="ApplicationName"
-                                    DataValueField="ApplicationId">
+                                <asp:DropDownList ID="AppName" runat="server" DataSourceID="Applications" DataTextField="ApplicationName"
+                                    DataValueField="ApplicationId" ondatabound="AppName_DataBound">
                                 </asp:DropDownList>
                             </td>
                             <td class="label">
@@ -136,7 +151,9 @@
                             </td>
                             <td>
                                 <asp:DropDownList ID="Assignee" runat="server" DataSourceID="AssigneeDS" DataTextField="UserName"
-                                    DataValueField="UserId" AutoPostBack="True" OnSelectedIndexChanged="Assignee_SelectedIndexChanged">
+                                    DataValueField="UserId" AutoPostBack="True" 
+                                    OnSelectedIndexChanged="Assignee_SelectedIndexChanged" 
+                                    ondatabound="Assignee_DataBound">
                                 </asp:DropDownList>
                             </td>
                         </tr>
@@ -176,7 +193,7 @@
                             </td>
                             <td>
                                 <asp:DropDownList ID="UserToModify" runat="server" DataSourceID="AssigneeDS" DataTextField="UserName"
-                                    DataValueField="UserName">
+                                    DataValueField="UserName" ondatabound="UserToModify_DataBound">
                                 </asp:DropDownList>
                             </td>
                         </tr>
@@ -187,8 +204,8 @@
                             <td>
                                 <asp:RadioButtonList ID="UserModifyAction" runat="server" RepeatDirection="Horizontal"
                                     RepeatLayout="Flow">
-                                    <asp:ListItem Text="Lock" Value="Lock" />
-                                    <asp:ListItem Text="Unlock" Value="Unlock" />
+                                    <asp:ListItem Text="Activate" Value="Activate" />
+                                    <asp:ListItem Text="Deactivate" Value="Deactivate" />
                                     <asp:ListItem Text="Reset Password" Value="Reset Password" />
                                 </asp:RadioButtonList>
                             </td>
@@ -197,13 +214,15 @@
                 </asp:View>
             </asp:MultiView>
             <br />
-            <asp:Panel ID="ButtonPanel" runat="server">
+            <asp:Panel ID="ButtonPanel" runat="server" Visible="False">
                 [<asp:LinkButton ID="CancelBtn" runat="server" OnClick="CancelBtn_Click">Cancel</asp:LinkButton>]
                 [
                 <asp:LinkButton ID="SubmitBtn" runat="server" OnClick="SubmitBtn_Click">Submit</asp:LinkButton>]
             </asp:Panel>
             <br />
-            <asp:SqlDataSource ID="SqlDataSource1" runat="server" ConnectionString="<%$ ConnectionStrings:aspnetdbConnectionString %>"
+            <asp:SqlDataSource ID="Applications" runat="server" ConnectionString="<%$ ConnectionStrings:aspnetdbConnectionString %>"
+                
+                
                 SelectCommand="SELECT [ApplicationName], [ApplicationId] FROM [vw_aspnet_Applications]">
             </asp:SqlDataSource>
             <asp:SqlDataSource ID="AssigneeDS" runat="server" ConnectionString="<%$ ConnectionStrings:aspnetdbConnectionString %>">
@@ -215,19 +234,6 @@
                         Type="Object" />
                 </SelectParameters>
             </asp:SqlDataSource>
-        </div>
-        <div class="appStatus">
-            <table width="100%">
-                <tr>
-                    <td style="width: 30%; text-align: left; font-weight:bold;">
-                        Selected application:
-                        <asp:Label ID="SelectedAppName" runat="server" />
-                    </td>
-                    <td style="text-align: right;">
-                        <asp:Label ID="StatusMsg" runat="server" />
-                    </td>
-                </tr>
-            </table>
         </div>
     </div>
     </form>

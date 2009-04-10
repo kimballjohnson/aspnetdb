@@ -1,20 +1,28 @@
-﻿/*
-This software is provided under GPL v3 license http://www.gnu.org/licenses/gpl-3.0.txt.
-*/
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Text;
 using System.Web.Security;
+using System.Configuration.Provider;
 
 namespace org.bsodhi.SecuApp.secure
 {
+    /// <summary>
+    /// Codebehind class for the page.
+    /// </summary>
     public partial class Security : System.Web.UI.Page
     {
+        /// <summary>
+        /// We initialize few session variables that track the selected
+        /// application whose roles and users are being manipulated.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         protected void Page_Load(object sender, EventArgs e)
         {
+            ButtonPanel.Visible = false;
             if(!IsPostBack)
             {
                 Session.Add("OrigAppName", Membership.ApplicationName);
@@ -23,11 +31,13 @@ namespace org.bsodhi.SecuApp.secure
             SelectedAppName.Text = ""+Session["SelectedAppName"];
         }
         /// <summary>
-        /// 
+        /// Setup the application name based on the selections in wizard. 
+        /// Depending on what application is selected, the roles and users
+        /// dropdowns are populated from that application.
         /// </summary>
-        private void SetupForAction()
+        private void SetupApp()
         {
-            if (AppName.SelectedIndex != -1 && AppNameNew.Text.Trim().Length == 0)
+            if (AppName.SelectedIndex != 0 && AppNameNew.Text.Trim().Length == 0)
             {
                 Session.Add("SelectedAppName", AppName.SelectedItem.Text);
                 InitSelectSQL();
@@ -36,9 +46,13 @@ namespace org.bsodhi.SecuApp.secure
             {
                 Session.Add("SelectedAppName", AppNameNew.Text.Trim());
             }
+            else
+            {
+                Session.Add("SelectedAppName", Membership.ApplicationName);
+            }
         }
         /// <summary>
-        /// 
+        /// Switching between this application and the one being manipulated.
         /// </summary>
         /// <param name="reset"></param>
         private void ChangeApp(bool reset)
@@ -47,7 +61,7 @@ namespace org.bsodhi.SecuApp.secure
                 ""+((reset) ? Session["OrigAppName"] : Session["SelectedAppName"]);
         }
         /// <summary>
-        /// 
+        /// Reset the UI to initial application selection view.
         /// </summary>
         private void ResetWizard()
         {
@@ -55,7 +69,7 @@ namespace org.bsodhi.SecuApp.secure
             MultiView1.ActiveViewIndex = 0;
         }
         /// <summary>
-        /// 
+        /// Initialize the SQL for loading various dropdowns.
         /// </summary>
         public void InitSelectSQL()
         {
@@ -65,7 +79,7 @@ namespace org.bsodhi.SecuApp.secure
             RolesDS.Select(new DataSourceSelectArguments());
         }
         /// <summary>
-        /// 
+        /// Create a new user in the selected application using Membership API.
         /// </summary>
         protected void CreateUser()
         {
@@ -73,22 +87,7 @@ namespace org.bsodhi.SecuApp.secure
             MembershipUser u = Membership.CreateUser(UserId.Text, passwd, Email.Text);
         }
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
-        private string[] GetSelectedRoles(ListBox list)
-        {
-            int[] selInds = list.GetSelectedIndices();
-            string[] myRoles = new string[selInds.Length];
-            for (int ind = 0; ind < myRoles.Length; ind++)
-            {
-                myRoles[ind] = list.Items[ind].Value;
-            }
-            return myRoles;
-        }
-        /// <summary>
-        /// 
+        /// Handler for the submit button when we apply all the modifications.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -96,7 +95,7 @@ namespace org.bsodhi.SecuApp.secure
         {
             try
             {
-                ChangeApp(false);
+                ChangeApp(false);// Switch to the selected application
                 if (TaskSelection.SelectedValue.Equals("Create User"))
                 {
                     CreateUser();
@@ -109,6 +108,11 @@ namespace org.bsodhi.SecuApp.secure
                 {
                     foreach (ListItem itm in AssignedRoles.Items)
                     {
+                        if(Assignee.SelectedIndex == 0)
+                        {
+                            StatusMsg.Text = "Please select a user!";
+                            break;
+                        }
                         bool inRole = Roles.IsUserInRole(Assignee.SelectedItem.Text, itm.Value);
                         if (itm.Selected && !inRole)
                         {
@@ -130,28 +134,16 @@ namespace org.bsodhi.SecuApp.secure
                 }
                 else if (TaskSelection.SelectedValue.Equals("Modify User"))
                 {
-                    if (UserModifyAction.SelectedValue.Equals("Lock"))
-                    {
-                        Membership.GetUser(UserToModify.SelectedItem.Text).IsApproved = false;
-                    }
-                    else if (UserModifyAction.SelectedValue.Equals("Unlock"))
-                    {
-                        Membership.GetUser(UserToModify.SelectedItem.Text).UnlockUser();
-                        Membership.GetUser(UserToModify.SelectedItem.Text).IsApproved = true;
-                    }
-                    else if (UserModifyAction.SelectedValue.Equals("Reset Password"))
-                    {
-                        string newPasswd = Membership.GetUser(UserToModify.SelectedItem.Text).ResetPassword();
-                    }
-                    else
-                    {
-                        StatusMsg.Text = "\nPlease select appropriate action to perform on the user!";
-                    }
+                    ModifyUser();
                 }
                 else
                 {
-                    StatusMsg.Text = "\nPlease select a task from the dropdown!";
+                    StatusMsg.Text = "Please select a task from the dropdown!";
                 }
+            }
+            catch (ProviderException pex)
+            {
+                StatusMsg.Text = "Operation failed: "+pex.Message;
             }
             finally
             {
@@ -160,29 +152,60 @@ namespace org.bsodhi.SecuApp.secure
             MultiView1.ActiveViewIndex = 1;// Take the user back to task selection
         }
         /// <summary>
+        /// Modify the selected user.
+        /// </summary>
+        private void ModifyUser()
+        {
+            if (UserToModify.SelectedIndex == 0)
+            {
+                StatusMsg.Text = "Please select a user!";
+            }
+            else
+            {
+                if (UserModifyAction.SelectedValue.Equals("Deactivate"))
+                {
+                    Membership.GetUser(UserToModify.SelectedItem.Text).IsApproved = false;
+                }
+                else if (UserModifyAction.SelectedValue.Equals("Activate"))
+                {
+                    Membership.GetUser(UserToModify.SelectedItem.Text).UnlockUser();
+                    Membership.GetUser(UserToModify.SelectedItem.Text).IsApproved = true;
+                }
+                else if (UserModifyAction.SelectedValue.Equals("Reset Password"))
+                {
+                    string newPasswd = Membership.GetUser(UserToModify.SelectedItem.Text).ResetPassword();
+                }
+                else
+                {
+                    StatusMsg.Text = "Please select appropriate action to perform on the user!";
+                }
+            }
+        }
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         protected void Assignee_SelectedIndexChanged(object sender, EventArgs e)
         {
-            StatusMsg.Text = "\nSelected user: " + Assignee.SelectedItem.Text + ". Roles: ";
+            if(Assignee.SelectedIndex == 0) return;
             try
             {
                 ChangeApp(false);
                 string[] currRoles = Roles.GetRolesForUser(Assignee.SelectedItem.Text);
                 foreach (ListItem it in AssignedRoles.Items)
                 {
+                    it.Selected = false;
                     foreach (string r in currRoles)
                     {
                         it.Selected = it.Text.Trim().ToUpper().Equals(r.Trim().ToUpper());
                         if (it.Selected)
                         {
-                            StatusMsg.Text += (r + ", ");
                             break;
                         }
                     }
                 }
+                ButtonPanel.Visible = true;
             }
             finally
             {
@@ -196,9 +219,16 @@ namespace org.bsodhi.SecuApp.secure
         /// <param name="e"></param>
         protected void AppSelectBtn_Click(object sender, EventArgs e)
         {
-            SetupForAction();
-            MultiView1.ActiveViewIndex = 1; // Show the task selection view
-            SelectedAppName.Text = ""+Session["SelectedAppName"];
+            if (AppName.SelectedIndex == 0 && AppNameNew.Text.Trim().Length == 0)
+            {
+                StatusMsg.Text = "Please select an application!";
+            }
+            else
+            {
+                SetupApp();
+                MultiView1.ActiveViewIndex = 1; // Show the task selection view
+                SelectedAppName.Text = "" + Session["SelectedAppName"];
+            }
         }
         /// <summary>
         /// 
@@ -209,10 +239,18 @@ namespace org.bsodhi.SecuApp.secure
         {
             try
             {
-                ChangeApp(false);
-                InitSelectSQL();
-                MultiView1.ActiveViewIndex = TaskSelection.SelectedIndex + 1;
-                StatusMsg.Text += "\nSelectd task: " + TaskSelection.SelectedItem.Text;
+                if (TaskSelection.SelectedIndex == 0)
+                {
+                    StatusMsg.Text = "Please select a task!";
+                }
+                else
+                {
+                    ChangeApp(false);
+                    InitSelectSQL();
+                    MultiView1.ActiveViewIndex = TaskSelection.SelectedIndex + 1;
+                    StatusMsg.Text = "Selectd task: " + TaskSelection.SelectedItem.Text;
+                    ButtonPanel.Visible = true;
+                }
             }
             finally
             {
@@ -246,6 +284,33 @@ namespace org.bsodhi.SecuApp.secure
         {
             MultiView1.ActiveViewIndex = 1;
         }
-    
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void AppName_DataBound(object sender, EventArgs e)
+        {
+            AppName.Items.Insert(0, "--Select--");
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void Assignee_DataBound(object sender, EventArgs e)
+        {
+            Assignee.Items.Insert(0, "--Select--");
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void UserToModify_DataBound(object sender, EventArgs e)
+        {
+            UserToModify.Items.Insert(0, "--Select--");
+        }
+
     }
 }
