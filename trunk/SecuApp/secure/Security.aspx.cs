@@ -23,12 +23,12 @@ namespace org.bsodhi.SecuApp.secure
         protected void Page_Load(object sender, EventArgs e)
         {
             ButtonPanel.Visible = false;
-            if(!IsPostBack)
+            if (!IsPostBack)
             {
                 Session.Add("OrigAppName", Membership.ApplicationName);
                 Session.Add("SelectedAppName", Membership.ApplicationName);
             }
-            SelectedAppName.Text = ""+Session["SelectedAppName"];
+            SelectedAppName.Text = "" + Session["SelectedAppName"];
         }
         /// <summary>
         /// Setup the application name based on the selections in wizard. 
@@ -58,7 +58,7 @@ namespace org.bsodhi.SecuApp.secure
         private void ChangeApp(bool reset)
         {
             Roles.ApplicationName = Membership.ApplicationName =
-                ""+((reset) ? Session["OrigAppName"] : Session["SelectedAppName"]);
+                "" + ((reset) ? Session["OrigAppName"] : Session["SelectedAppName"]);
         }
         /// <summary>
         /// Reset the UI to initial application selection view.
@@ -67,6 +67,7 @@ namespace org.bsodhi.SecuApp.secure
         {
             ChangeApp(true);
             MultiView1.ActiveViewIndex = 0;
+            StatusMsg.Text = "";
         }
         /// <summary>
         /// Initialize the SQL for loading various dropdowns.
@@ -83,8 +84,9 @@ namespace org.bsodhi.SecuApp.secure
         /// </summary>
         protected void CreateUser()
         {
-            string passwd = Membership.GeneratePassword(5, 2);
+            string passwd = Membership.GeneratePassword(4, 1);
             MembershipUser u = Membership.CreateUser(UserId.Text, passwd, Email.Text);
+            StatusMsg.Text = "User successfully created :: Password set to "+passwd;
         }
         /// <summary>
         /// Handler for the submit button when we apply all the modifications.
@@ -98,17 +100,18 @@ namespace org.bsodhi.SecuApp.secure
                 ChangeApp(false);// Switch to the selected application
                 if (TaskSelection.SelectedValue.Equals("Create User"))
                 {
-                    CreateUser();
+                    CreateUser();                    
                 }
                 else if (TaskSelection.SelectedValue.Equals("Create Role"))
                 {
                     Roles.CreateRole(RoleName.Text.Trim());
+                    StatusMsg.Text = "Role successfully created";
                 }
                 else if (TaskSelection.SelectedValue.Equals("Assign Roles"))
                 {
                     foreach (ListItem itm in AssignedRoles.Items)
                     {
-                        if(Assignee.SelectedIndex == 0)
+                        if (Assignee.SelectedIndex == 0)
                         {
                             StatusMsg.Text = "Please select a user!";
                             break;
@@ -122,7 +125,7 @@ namespace org.bsodhi.SecuApp.secure
                         {
                             Roles.RemoveUserFromRole(Assignee.SelectedItem.Text, itm.Value);
                         }
-                    }                    
+                    }
                 }
                 else if (TaskSelection.SelectedValue.Equals("Delete Roles"))
                 {
@@ -143,7 +146,7 @@ namespace org.bsodhi.SecuApp.secure
             }
             catch (ProviderException pex)
             {
-                StatusMsg.Text = "Operation failed: "+pex.Message;
+                StatusMsg.Text = "Operation failed: " + pex.Message;
             }
             finally
             {
@@ -162,22 +165,32 @@ namespace org.bsodhi.SecuApp.secure
             }
             else
             {
-                if (UserModifyAction.SelectedValue.Equals("Deactivate"))
+                if (UserModifyAction.SelectedIndex == -1)
                 {
-                    Membership.GetUser(UserToModify.SelectedItem.Text).IsApproved = false;
-                }
-                else if (UserModifyAction.SelectedValue.Equals("Activate"))
-                {
-                    Membership.GetUser(UserToModify.SelectedItem.Text).UnlockUser();
-                    Membership.GetUser(UserToModify.SelectedItem.Text).IsApproved = true;
-                }
-                else if (UserModifyAction.SelectedValue.Equals("Reset Password"))
-                {
-                    string newPasswd = Membership.GetUser(UserToModify.SelectedItem.Text).ResetPassword();
+                    StatusMsg.Text = "Please select appropriate action to perform on the user!";
                 }
                 else
                 {
-                    StatusMsg.Text = "Please select appropriate action to perform on the user!";
+                    string msg = "";
+                    if (UserModifyAction.SelectedValue.Equals("Deactivate"))
+                    {
+                        Membership.GetUser(UserToModify.SelectedItem.Text).IsApproved = false;
+                        msg += (" :: User has been deactivated");
+                    }
+                    else if (UserModifyAction.SelectedValue.Equals("Activate"))
+                    {
+                        Membership.GetUser(UserToModify.SelectedItem.Text).UnlockUser();
+                        Membership.GetUser(UserToModify.SelectedItem.Text).IsApproved = true;
+                        msg += (" :: User has been activated");
+                    }
+                    else if (UserModifyAction.SelectedValue.Equals("Reset Password"))
+                    {
+                        MembershipUser u = Membership.GetUser(UserToModify.SelectedItem.Text);
+                        string newPasswd = Membership.GeneratePassword(4,1);
+                        u.ChangePassword(u.GetPassword(), newPasswd);
+                        msg += (" :: Password reset to: "+newPasswd);
+                    }
+                    StatusMsg.Text = "User successfully modified"+msg;
                 }
             }
         }
@@ -188,7 +201,7 @@ namespace org.bsodhi.SecuApp.secure
         /// <param name="e"></param>
         protected void Assignee_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if(Assignee.SelectedIndex == 0) return;
+            if (Assignee.SelectedIndex == 0) return;
             try
             {
                 ChangeApp(false);
